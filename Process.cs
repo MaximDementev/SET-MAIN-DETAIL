@@ -17,6 +17,7 @@ namespace SET_MAIN_DETAIL
         private List<Element> AllRebarInstances;
         Document doc;
         Dictionary<string, RebarCage> RebarCagesDict = new Dictionary<string, RebarCage>();
+        List <RebarInstance> rebarInstances = new List<RebarInstance>();
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
@@ -31,31 +32,23 @@ namespace SET_MAIN_DETAIL
             {
                 AllRebarInstances = selection.PickElementsByRectangle(new SeparatorSelectionFilter(),
                                    "Выберите несущую арматуру (Esc - отмена)").ToList();
+                CreateRebarCageDict();
+                SetFlagAsMainRebar();
             }
             catch
             {
                 return Result.Cancelled;
             }
 
-            using (Transaction transaction = new Transaction(doc, $"Главная деталь изделия = 0"))
+            using (Transaction transaction = new Transaction(doc, $"Заполнение Главная деталь изделия арматуре"))
             {
                 transaction.Start();
 
-
-                CreateRebarCageDict();
+                rebarInstances.ForEach(el => el.SetAllParamValue());
 
                 transaction.Commit();
             }
 
-            using (Transaction transaction = new Transaction(doc, $"Главная деталь изделия = 1"))
-            {
-                transaction.Start();
-
-
-                SetFlagAsMainRebar();
-
-                transaction.Commit();
-            }
 
             return Result.Succeeded;
 
@@ -65,20 +58,23 @@ namespace SET_MAIN_DETAIL
         {
             foreach (Element item in AllRebarInstances)
             {
-                string itemName = ParamHandler.GetParamValue(item, "ADSK_Марка изделия");
+                RebarInstance rebarInstance = new RebarInstance(doc, item);
+                rebarInstances.Add(rebarInstance);
+
+                string itemName = rebarInstance.GetRebarProductMark();
 
                 if (RebarCagesDict.Count == 0 || !RebarCagesDict.ContainsKey(itemName))
                 {
                     RebarCage rebarCage = new RebarCage(itemName);
-                    rebarCage.AddInstance(item);
+                    rebarCage.AddInstance(rebarInstance);
                     RebarCagesDict.Add(itemName, rebarCage);
                 }
                 else
                 {
-                    RebarCagesDict[itemName].AddInstance(item);
+                    RebarCagesDict[itemName].AddInstance(rebarInstance);
                 }
 
-                ParamHandler.SetParamValue(item, "ADSK_Главная деталь изделия", 0);
+                rebarInstance.SetMainPartOfProduct(0);
             }                
         }
 

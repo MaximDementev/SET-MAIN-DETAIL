@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using System.Xml.Linq;
 
 namespace SET_MAIN_DETAIL
 {
@@ -6,31 +7,55 @@ namespace SET_MAIN_DETAIL
     {
 
 
-        public static string GetParamValue(Element instance, string ParameterName)
+        public static string GetStringParamValue(Document doc, Element instance, string ParameterName)
         {
-            Parameter param = GetParam(instance, ParameterName);
+            Parameter param = GetParam(doc, instance, ParameterName);
 
-            string stringValue = "";
-            if (param != null)
-            {
-                // Проверяем, что параметр имеет значение
-                if (param.HasValue)
-                {
-                    stringValue = param.AsString();
-                }
-                return stringValue;
-            }
-            else throw new System.Exception($"Не удалось прочитать параметр {ParameterName}");
+            if (param != null && param.HasValue)
+                return param.AsString();
+            throw new System.Exception($"Не удалось прочитать параметр {ParameterName}");
         }
 
-        private static Parameter GetParam(Element instance, string ParameterName)
+        public static int GetIntParamValue(Document doc, Element instance, string ParameterName)
         {
-            Parameter param = instance.LookupParameter(ParameterName);
+            Parameter param = GetParam(doc, instance, ParameterName);
 
-            return param;
+            if (param != null && param.HasValue)
+                return param.AsInteger();
+            throw new System.Exception($"Не удалось прочитать параметр {ParameterName}");
         }
 
-        public static void SetParamValue(Element instance, string ParameterName, int value)
+        public static double GetDoubleParamValue(Document doc, Element instance, string ParameterName)
+        {
+            Parameter param = GetParam(doc, instance, ParameterName);
+
+            if (param == null || !param.HasValue)
+                throw new System.Exception($"Не удалось прочитать параметр {ParameterName}");
+
+            double valueInFeet = param.AsDouble();
+            double valueInMillim = UnitUtils.ConvertFromInternalUnits(valueInFeet, UnitTypeId.Millimeters);
+            return valueInMillim;
+        }
+
+        private static Parameter GetParam(Document doc, Element instance, string ParameterName)
+        {
+            Parameter parameterInstance = instance.LookupParameter(ParameterName);
+            if (parameterInstance != null)
+            { return parameterInstance; }
+
+            ElementId typeId = instance.GetTypeId();
+            if (typeId == ElementId.InvalidElementId)
+                return null;
+
+            Element typeElement = doc.GetElement(typeId);
+            if (typeElement == null)
+                return null;
+
+            Parameter parameterType = typeElement.LookupParameter(ParameterName);
+            return parameterType;
+        }
+
+        public static void SetIntParamValue(Element instance, string ParameterName, int value)
         {
             Parameter param = instance.LookupParameter(ParameterName);
             int existValue = param.AsInteger();

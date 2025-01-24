@@ -1,10 +1,6 @@
-﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SET_MAIN_DETAIL
 {
@@ -19,20 +15,20 @@ namespace SET_MAIN_DETAIL
             CageName = cageName;
         }
 
-        public void AddInstance(Element instance)
+        public void AddInstance(RebarInstance instance)
         {
 
-            string itemName = ParamHandler.GetParamValue(instance, "ADSK_Позиция");
+            string InstanceMark = instance.GetRebarInstanceMark();
             
-            if (SimilarRebarsDict.Count == 0 || !SimilarRebarsDict.ContainsKey(itemName))
+            if (SimilarRebarsDict.Count == 0 || !SimilarRebarsDict.ContainsKey(InstanceMark))
             {
-                SimilarRebars similarRebars = new SimilarRebars(itemName);
+                SimilarRebars similarRebars = new SimilarRebars(InstanceMark);
                 similarRebars.AddInstance(instance);
-                SimilarRebarsDict.Add(itemName, similarRebars);
+                SimilarRebarsDict.Add(InstanceMark, similarRebars);
             }
             else
             {
-                SimilarRebarsDict[itemName].AddInstance(instance);
+                SimilarRebarsDict[InstanceMark].AddInstance(instance);
             }
         }
 

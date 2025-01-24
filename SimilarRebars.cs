@@ -10,25 +10,22 @@ namespace SET_MAIN_DETAIL
     public class SimilarRebars
     {
         public string RebarName { get; private set; }
-        public List<Element> RebarInstanceList { get; private set; }
+        public List<RebarInstance> RebarInstanceList { get; private set; }
 
         public SimilarRebars(string rebarName)
         {
             RebarName = rebarName;
-            RebarInstanceList = new List<Element>();
+            RebarInstanceList = new List<RebarInstance>();
         }
 
-        public void AddInstance(Element element)
+        public void AddInstance(RebarInstance element)
         {
             RebarInstanceList.Add(element);
         }
 
         public void SetFlagAsMainRebar()
         {
-            foreach (var item in RebarInstanceList)
-            {
-                ParamHandler.SetParamValue(item, "ADSK_Главная деталь изделия", 1);
-            }
+            RebarInstanceList.ForEach(el => el.SetMainPartOfProduct(1));
         }
 
         public int GetInstanceCount()

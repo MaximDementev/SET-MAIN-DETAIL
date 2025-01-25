@@ -23,9 +23,9 @@ namespace SET_MAIN_DETAIL
         private double _rebarLength = 0;
         private int _rebarShape = 0;
 
-        public Element _instance { get; private set; }
+        public FamilyInstance _instance { get; private set; }
 
-        public RebarInstance (Document doc, Element instance)
+        public RebarInstance (Document doc, FamilyInstance instance)
         { 
             _doc = doc;
             _instance = instance;  
@@ -37,13 +37,14 @@ namespace SET_MAIN_DETAIL
         //GET PARAM VALUE
         public string GetRebarInstanceMark()
         {
-            if (_rebarInstanceMark == null) 
+            if (_rebarInstanceMark == null)
             {
                 string mark = GetRebarDetailPrefix();
                 mark += $"_{GetRebarName()}";
                 mark += $"_{GetRebarLength()}";
                 mark += $"_{GetRebarPosition()}";
                 mark += $"_{GetRebarShape()}";
+
                 _rebarInstanceMark = mark ;
             }
             return _rebarInstanceMark;

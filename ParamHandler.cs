@@ -5,15 +5,16 @@ namespace SET_MAIN_DETAIL
 {
     internal static class ParamHandler
     {
-
-
         public static string GetStringParamValue(Document doc, Element instance, string ParameterName)
         {
-            Parameter param = GetParam(doc, instance, ParameterName);
-
-            if (param != null && param.HasValue)
-                return param.AsString();
-            throw new System.Exception($"Не удалось прочитать параметр {ParameterName}");
+            string value = "";
+            try
+            {
+                Parameter param = GetParam(doc, instance, ParameterName);
+                value = param.AsString();
+            }
+            catch { }
+            return value;
         }
 
         public static int GetIntParamValue(Document doc, Element instance, string ParameterName)
@@ -52,7 +53,9 @@ namespace SET_MAIN_DETAIL
                 return null;
 
             Parameter parameterType = typeElement.LookupParameter(ParameterName);
-            return parameterType;
+            if (parameterType == null)
+                return null;
+            return parameterType;            
         }
 
         public static void SetIntParamValue(Element instance, string ParameterName, int value)

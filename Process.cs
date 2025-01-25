@@ -1,7 +1,9 @@
 ﻿using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -14,29 +16,50 @@ namespace SET_MAIN_DETAIL
 
     internal class Process : IExternalCommand
     {
-        private List<Element> AllRebarInstances;
-        Document doc;
-        Dictionary<string, RebarCage> RebarCagesDict = new Dictionary<string, RebarCage>();
-        List <RebarInstance> rebarInstances = new List<RebarInstance>();
+        private List<FamilyInstance> AllRebarInstances = new List<FamilyInstance>();
+        private static Document doc;
+        private Dictionary<string, RebarCage> RebarCagesDict = new Dictionary<string, RebarCage>();
+        private List<RebarInstance> rebarInstancesClassList = new List<RebarInstance>();
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             UIDocument uiDoc = commandData.Application.ActiveUIDocument;
 
-            Document doc = uiDoc.Document;
+             Document doc = uiDoc.Document;
 
             Selection selection = uiDoc.Selection;
 
 
             try
             {
-                AllRebarInstances = selection.PickElementsByRectangle(new SeparatorSelectionFilter(),
+                List<Element> AllSelectedElements = selection.PickElementsByRectangle(new SeparatorSelectionFilter(),
                                    "Выберите несущую арматуру (Esc - отмена)").ToList();
+
+                // ************************
+                List<FamilyInstance> SelectedInstansec = new List<FamilyInstance>();
+                AllSelectedElements.ForEach(instance =>
+                {
+                    if (instance is FamilyInstance familyInstance) SelectedInstansec.Add(familyInstance);
+                });
+
+                //****************************
+
+                SelectedInstansec.ForEach(el =>
+                {
+                    el.GetSubComponentIds().ToList().ForEach(subEl =>
+                    {
+                        FamilyInstance subElem = doc.GetElement(subEl) as FamilyInstance; 
+                        if (subElem.Category != null && subElem.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar) 
+                            AllRebarInstances.Add(subElem);
+                    });
+                });
+
                 CreateRebarCageDict();
                 SetFlagAsMainRebar();
             }
-            catch
+            catch (Exception ex)
             {
+                TaskDialog.Show("Ошибка", ex.Message);
                 return Result.Cancelled;
             }
 
@@ -44,7 +67,7 @@ namespace SET_MAIN_DETAIL
             {
                 transaction.Start();
 
-                rebarInstances.ForEach(el => el.SetAllParamValue());
+                rebarInstancesClassList.ForEach(el => el.SetAllParamValue());
 
                 transaction.Commit();
             }
@@ -56,10 +79,10 @@ namespace SET_MAIN_DETAIL
 
         public void CreateRebarCageDict() 
         {
-            foreach (Element item in AllRebarInstances)
+            foreach (FamilyInstance item in AllRebarInstances)
             {
                 RebarInstance rebarInstance = new RebarInstance(doc, item);
-                rebarInstances.Add(rebarInstance);
+                rebarInstancesClassList.Add(rebarInstance);
 
                 string itemName = rebarInstance.GetRebarProductMark();
 
@@ -92,7 +115,7 @@ namespace SET_MAIN_DETAIL
     {
         public bool AllowElement(Element elem)
         {
-            return elem is FamilyInstance instance;
+            return elem is FamilyInstance instance;// && instance.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar;
         }
 
         public bool AllowReference(Reference reference, XYZ position)

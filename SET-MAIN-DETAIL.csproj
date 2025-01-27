@@ -242,7 +242,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DomainCode\RebarModels\RebarCage.cs" />
+    <Compile Include="DomainCode\RebarModels\OneRebarCage.cs" />
+    <Compile Include="DomainCode\RebarModels\RebarCages.cs" />
     <Compile Include="DomainCode\RebarModels\RebarInstance.cs" />
     <Compile Include="DomainCode\RebarModels\SimilarRebars.cs" />
     <Compile Include="DomainCode\Util\ParamHandler.cs" />

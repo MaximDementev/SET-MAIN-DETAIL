@@ -20,7 +20,9 @@ namespace SET_MAIN_DETAIL
         private static Autodesk.Revit.DB.Document _doc;
 
         private List<FamilyInstance> _allRebarInstances = new List<FamilyInstance>();
-        private Dictionary<string, RebarCage> _rebarCagesDict = new Dictionary<string, RebarCage>();
+        private List<FamilyInstance> _oneCageRebarInstances = new List<FamilyInstance>();
+
+        private Dictionary<string, RebarCages> _rebarCagesDict = new Dictionary<string, RebarCages>();
         private List<RebarInstance> _rebarInstancesClassList = new List<RebarInstance>();
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements) 
@@ -31,7 +33,9 @@ namespace SET_MAIN_DETAIL
 
             try
             {
-                RebarSelection();
+                RebarSelection(_allRebarInstances, "Выбор всех каркасов (Esc - отмена)");
+                RebarSelection(_oneCageRebarInstances, "Выбор одного каркаса (Esc - отмена)");
+
                 CreateRebarCageDict();
 
 
@@ -61,12 +65,12 @@ namespace SET_MAIN_DETAIL
 
         }
 
-        public void RebarSelection()
+        public void RebarSelection(List<FamilyInstance> RebarInstances, string processName)
         {
             Selection selection = _uiDoc.Selection;
 
-            List<Element> AllSelectedElements = selection.PickElementsByRectangle(new SeparatorSelectionFilter(),
-                                   "Выберите несущую арматуру (Esc - отмена)").ToList();
+            List<Element> AllSelectedElements = selection
+                .PickElementsByRectangle(new SeparatorSelectionFilter(),processName).ToList();
 
             List<FamilyInstance> SelectedInstansec = new List<FamilyInstance>();
             AllSelectedElements.ForEach(instance =>
@@ -82,7 +86,7 @@ namespace SET_MAIN_DETAIL
                 {
                     FamilyInstance subElem = _doc.GetElement(subEl) as FamilyInstance;
                     if (subElem.Category != null && subElem.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar)
-                        _allRebarInstances.Add(subElem);
+                        RebarInstances.Add(subElem);
                 });
             });
         }
@@ -98,7 +102,7 @@ namespace SET_MAIN_DETAIL
 
                 if (_rebarCagesDict.Count == 0 || !_rebarCagesDict.ContainsKey(itemName))
                 {
-                    RebarCage rebarCage = new RebarCage(itemName);
+                    RebarCages rebarCage = new RebarCages(itemName);
                     rebarCage.AddInstance(rebarInstance);
                     _rebarCagesDict.Add(itemName, rebarCage);
                 }
@@ -106,6 +110,11 @@ namespace SET_MAIN_DETAIL
                 {
                     _rebarCagesDict[itemName].AddInstance(rebarInstance);
                 }
+
+                _oneCageRebarInstances.ForEach(inst => 
+                {
+                    if (inst == item) _rebarCagesDict[itemName].AddInstanceToMainOneRebarCage(rebarInstance);
+                });
 
                 rebarInstance.SetMainPartOfProduct(0);
             }                
@@ -125,6 +134,7 @@ namespace SET_MAIN_DETAIL
         public bool AllowElement(Element elem)
         {
             return elem is FamilyInstance instance;// && instance.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar;
+                //elem.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar;
         }
 
         public bool AllowReference(Reference reference, XYZ position)

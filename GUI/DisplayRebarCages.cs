@@ -8,9 +8,9 @@ namespace SET_MAIN_DETAIL
     public partial class DisplayRebarCages : Form
     {
 
-        private List<RebarCage> _rebarCagesList;
+        private List<RebarCages> _rebarCagesList;
 
-        public DisplayRebarCages(Dictionary<string, RebarCage> rebarCagesDict)
+        public DisplayRebarCages(Dictionary<string, RebarCages> rebarCagesDict)
         {
             _rebarCagesList = rebarCagesDict.Values.ToList();
             InitializeComponent();

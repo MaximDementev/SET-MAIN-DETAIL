@@ -31,6 +31,15 @@ namespace SET_MAIN_DETAIL
             _instance = instance;  
         }
 
+        private string point { 
+            get 
+            {
+                LocationPoint point = (LocationPoint)_instance.Location;
+                return $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.X, UnitTypeId.Millimeters)}_" +
+                    $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.Y, UnitTypeId.Millimeters)}_" +
+                    $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.Z, UnitTypeId.Millimeters)}";
+            }}
+
         //------------------------------------------------------------------------------
 
 

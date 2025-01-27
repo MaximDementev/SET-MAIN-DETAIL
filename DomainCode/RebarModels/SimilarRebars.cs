@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.DB;
+﻿using Accord.MachineLearning;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,8 @@ namespace SET_MAIN_DETAIL
     public class SimilarRebars
     {
         public string RebarName { get; private set; }
+        public int RebarInstancesCount { get; private set; }
+
         public List<RebarInstance> RebarInstanceList { get; private set; }
 
         public SimilarRebars(string rebarName)
@@ -21,6 +25,7 @@ namespace SET_MAIN_DETAIL
         public void AddInstance(RebarInstance element)
         {
             RebarInstanceList.Add(element);
+            RebarInstancesCount = RebarInstancesCount + 1;
         }
 
         public void SetFlagAsMainRebar()
@@ -32,5 +37,6 @@ namespace SET_MAIN_DETAIL
         {
             return RebarInstanceList.Count;
         }
+
     }
 }

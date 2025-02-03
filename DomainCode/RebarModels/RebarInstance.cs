@@ -110,6 +110,32 @@ namespace SET_MAIN_DETAIL
             return _rebarShape;
         }
 
+        //Location & BoundingBox
+        public Autodesk.Revit.DB.XYZ GetLocationPoint()
+        {
+            LocationPoint locationPoint = _instance.Location as LocationPoint;
+            if (locationPoint != null) return locationPoint.Point;
+            else throw new System.Exception("Элемент не хранит координаты");
+        }
+
+        public Autodesk.Revit.DB.XYZ GetBoundingBox_MaxPoint()
+        {
+            return GetBoundingBox().Max;
+        }
+
+        public Autodesk.Revit.DB.XYZ GetBoundingBox_MinPoint()
+        {
+           return GetBoundingBox().Min;
+        }
+
+        public BoundingBoxXYZ GetBoundingBox()
+        {
+            BoundingBoxXYZ boundingBoxXYZ = _instance.get_BoundingBox(_doc.ActiveView);
+            if (boundingBoxXYZ != null) return _instance.get_BoundingBox(_doc.ActiveView);
+            else throw new System.Exception("Элемент не имеет тела");
+        }
+
+
         //SET
 
         public void SetMainPartOfProduct(int value)

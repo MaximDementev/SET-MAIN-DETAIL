@@ -52,8 +52,52 @@ namespace SET_MAIN_DETAIL
                 SeveralRebarSelection("Выбор каркаса ##указать название каркас## (Esc - отмена)");
                 OneRebarSelection("Выбор  ##указать название каркас## (Esc - отмена)");
                 AddOneRebarCageToRebarCages();
-                //обработка
-                _oneRebarCage.GetDimensionsBox();
+                _oneRebarCage.MakeDimensionsBox();
+
+                RebarCages rebarCages = _rebarCagesDict[_oneRebarCage.CageName];
+
+                double dimensionBoxRadius = _oneRebarCage.DimensionBox.GetRadius();
+
+                foreach (RebarInstance rebarInstance in rebarCages.RebarInstancesList)
+                {
+                    bool isAddedToExistingCage = false;
+
+                    foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                    {
+                        if (cage.CheckElementIsInsideDimensionBox(rebarInstance))
+                        {
+                            cage.AddInstance(rebarInstance);
+                            isAddedToExistingCage = true;
+                            break;
+                        }
+                    }
+
+                    if (!isAddedToExistingCage)
+                    {
+                        DimensionBox dimensionBox = new DimensionBox(rebarInstance.GetLocationPoint(), dimensionBoxRadius);
+                        OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
+                        newOneRebarCage.DimensionBox = dimensionBox;
+                        newOneRebarCage.AddInstance(rebarInstance);
+                        rebarCages.oneRebarCagesList.Add(newOneRebarCage);
+                    }
+                }
+
+                string MainRebarInstanceName = _oneRebarCage.MainRebarInstance.GetRebarInstanceName();
+                foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                {
+                    cage.SetMainRebarInstance(MainRebarInstanceName);
+                }
+
+                using (Transaction transaction = new Transaction(doc))
+                {
+                    transaction.Start($"Установка главной детали");
+                    rebarCages.RebarInstancesList.ForEach(rebarInstance => 
+                    {
+                        rebarInstance.SetAllParamValue();
+                    });
+
+                    transaction.Commit();
+                }
             }
             catch (Exception ex)
             {

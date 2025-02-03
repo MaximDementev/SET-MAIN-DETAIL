@@ -21,10 +21,11 @@ namespace SET_MAIN_DETAIL
         {
             get
             {
-                ValidateRebarsCages();
-                if (RebarsCagesIsValidated)
+                //закоментированно временно чтобы проверить как работает логика разбиения на каркасы
+                //ValidateRebarsCages();
+                //if (RebarsCagesIsValidated)
                     return CalcRebarsCages();
-                else return 0;
+                //else return 0;
             }
         }
         
@@ -52,7 +53,9 @@ namespace SET_MAIN_DETAIL
 
         private int CalcRebarsCages()
         {
-            return (int)_allRebarsCount / MainOneRebarCage.RebarInstancesCount;
+            return oneRebarCagesList.Count;
+            //закоментированно временно чтобы проверить как работает логика разбиения на каркасы
+            //return (int)_allRebarsCount / MainOneRebarCage.RebarInstancesCount;
         }
 
         public void DivideAllInstancesToCages()

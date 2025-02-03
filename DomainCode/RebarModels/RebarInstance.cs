@@ -6,16 +6,16 @@ namespace SET_MAIN_DETAIL
     {
         private Document _doc;
         private string _mainPartOfProduct_ParamName = "ADSK_Главная деталь изделия";
-        private string _rebarProductMark_ParamName = "ADSK_Марка изделия";
+        private string _rebarCageName_ParamName = "ADSK_Марка изделия";
         private string _rebarPosition_ParamName = "ADSK_Позиция";
         private string _rebarDetailPrefix_ParamName = "ADSK_Деталь_Префикс";
         private string _rebarName_ParamName = "ADSK_Наименование";
         private string _rebarLength_ParamName = "ADSK_Длина арматуры";
         private string _rebarShape_ParamName = "ADSK_Форма арматуры";
-        private string _rebarInstanceMark;
+        private string _rebarInstanceName;
 
 
-        private string _rebarProductMark;
+        private string _rebarCageName;
         private string _rebarPosition;
         private string _rebarDetailPrefix;
         private string _rebarName;
@@ -23,37 +23,49 @@ namespace SET_MAIN_DETAIL
         private double _rebarLength = 0;
         private int _rebarShape = 0;
 
-        public Element _instance { get; private set; }
+        public FamilyInstance _instance { get; private set; }
 
-        public RebarInstance (Document doc, Element instance)
-        { 
+        public RebarInstance(Document doc, FamilyInstance instance)
+        {
             _doc = doc;
-            _instance = instance;  
+            _instance = instance;
+        }
+
+        private string point
+        {
+            get
+            {
+                LocationPoint point = (LocationPoint)_instance.Location;
+                return $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.X, UnitTypeId.Millimeters)}_" +
+                    $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.Y, UnitTypeId.Millimeters)}_" +
+                    $"{(int)UnitUtils.ConvertFromInternalUnits(point.Point.Z, UnitTypeId.Millimeters)}";
+            }
         }
 
         //------------------------------------------------------------------------------
 
 
         //GET PARAM VALUE
-        public string GetRebarInstanceMark()
+        public string GetRebarInstanceName()
         {
-            if (_rebarInstanceMark == null) 
+            if (_rebarInstanceName == null)
             {
                 string mark = GetRebarDetailPrefix();
                 mark += $"_{GetRebarName()}";
                 mark += $"_{GetRebarLength()}";
                 mark += $"_{GetRebarPosition()}";
                 mark += $"_{GetRebarShape()}";
-                _rebarInstanceMark = mark ;
+
+                _rebarInstanceName = mark;
             }
-            return _rebarInstanceMark;
+            return _rebarInstanceName;
         }
 
-        public string GetRebarProductMark()
+        public string GetRebarCageName()
         {
-            if (_rebarProductMark == null) 
-            _rebarProductMark = ParamHandler.GetStringParamValue(_doc, _instance, _rebarProductMark_ParamName);
-            return _rebarProductMark;
+            if (_rebarCageName == null)
+                _rebarCageName = ParamHandler.GetStringParamValue(_doc, _instance, _rebarCageName_ParamName);
+            return _rebarCageName;
         }
 
         public string GetRebarPosition()
@@ -112,6 +124,5 @@ namespace SET_MAIN_DETAIL
             if (_mainPartOfProduct != 3)
                 ParamHandler.SetIntParamValue(_instance, _mainPartOfProduct_ParamName, _mainPartOfProduct);
         }
-
     }
 }

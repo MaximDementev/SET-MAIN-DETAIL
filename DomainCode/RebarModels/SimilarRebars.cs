@@ -1,15 +1,12 @@
-﻿using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace SET_MAIN_DETAIL
 {
     public class SimilarRebars
     {
         public string RebarName { get; private set; }
+        public int RebarInstancesCount { get { return RebarInstanceList.Count; } }
+
         public List<RebarInstance> RebarInstanceList { get; private set; }
 
         public SimilarRebars(string rebarName)
@@ -26,11 +23,6 @@ namespace SET_MAIN_DETAIL
         public void SetFlagAsMainRebar()
         {
             RebarInstanceList.ForEach(el => el.SetMainPartOfProduct(1));
-        }
-
-        public int GetInstanceCount()
-        {
-            return RebarInstanceList.Count;
         }
     }
 }

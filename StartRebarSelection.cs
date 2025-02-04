@@ -38,7 +38,7 @@ namespace SET_MAIN_DETAIL
 
                 CreateRebarCagesDict();
 
-                SetFlagAsMainRebar();
+                SetFlagAsMainRebar(0);
             }
             catch (Exception ex)
             { 
@@ -107,12 +107,12 @@ namespace SET_MAIN_DETAIL
             }
         }
 
-        public void SetFlagAsMainRebar()
+        public void SetFlagAsMainRebar(int value)
         {
-            foreach (var item in _rebarCagesDict)
+            _rebarInstancesList.ForEach(rebarInst =>
             {
-                item.Value.SetFlagAsMainRebar();
-            }
+                rebarInst.SetMainPartOfProduct(value);
+            });
         }
     }
 

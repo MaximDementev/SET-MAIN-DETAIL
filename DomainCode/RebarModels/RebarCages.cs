@@ -27,8 +27,7 @@ namespace SET_MAIN_DETAIL
                     return CalcRebarsCages();
                 //else return 0;
             }
-        }
-        
+        }        
 
         public RebarCages(string cageName)
         {
@@ -39,14 +38,8 @@ namespace SET_MAIN_DETAIL
         public void AddInstance(RebarInstance instance)
         {
             RebarInstancesList.Add(instance);
-
         }
-
-        public void SetFlagAsMainRebar()
-        {
-
-        }
-
+                
         private void ValidateRebarsCages()
         {
         }
@@ -62,7 +55,5 @@ namespace SET_MAIN_DETAIL
         {
             //надо понять, что тут делать!!
         }
-
-
     }
 }

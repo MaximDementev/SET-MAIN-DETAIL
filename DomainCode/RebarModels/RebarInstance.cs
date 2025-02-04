@@ -19,7 +19,7 @@ namespace SET_MAIN_DETAIL
         private string _rebarPosition;
         private string _rebarDetailPrefix;
         private string _rebarName;
-        private int _mainPartOfProduct = 3;
+        private int _mainPartOfProduct = 2;
         private double _rebarLength = 0;
         private int _rebarShape = 0;
 
@@ -147,7 +147,7 @@ namespace SET_MAIN_DETAIL
 
         public void SetAllParamValue()
         {
-            if (_mainPartOfProduct != 3)
+            if (_mainPartOfProduct != 2)
                 ParamHandler.SetIntParamValue(_instance, _mainPartOfProduct_ParamName, _mainPartOfProduct);
         }
     }

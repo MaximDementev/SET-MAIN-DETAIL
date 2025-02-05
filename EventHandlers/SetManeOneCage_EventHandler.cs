@@ -93,7 +93,11 @@ namespace SET_MAIN_DETAIL
                     transaction.Start($"Установка главной детали");
                     rebarCages.RebarInstancesList.ForEach(rebarInstance => 
                     {
-                        rebarInstance.SetAllParamValue();
+                        try
+                        {
+                            rebarInstance.SetAllParamValue();
+                        }
+                        catch { }
                     });
 
                     transaction.Commit();

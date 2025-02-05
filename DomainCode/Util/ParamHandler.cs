@@ -62,7 +62,7 @@ namespace SET_MAIN_DETAIL
         {
             Parameter param = instance.LookupParameter(ParameterName);
             int existValue = param.AsInteger();
-            if (existValue == value) return;
+            if (existValue == value && value != 0) return;
             param.Set(value);
         }
     }

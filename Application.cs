@@ -10,15 +10,14 @@ namespace SET_MAIN_DETAIL
 {
     public class Application : IExternalApplication
     {
-        public Result OnShutdown(UIControlledApplication application)
+        public Result OnStartup(UIControlledApplication application)
         {
             string assemblyLocation = Assembly.GetExecutingAssembly().Location,
                    iconsDirectoryPath = Path.GetDirectoryName(assemblyLocation) + @"\icons\";
 
             string tabName = "KRGP";
             string panelName = "Арматура";
-            string ribbonName = "Каркасы";
-
+            string ribbonName = "Главная деталь\nкаркаса";
 
             try
             {
@@ -26,7 +25,7 @@ namespace SET_MAIN_DETAIL
             }
             catch { }
 
-            #region 1. Архитектура
+            #region 1. Конструктив
             {
                 RibbonPanel panel = application.GetRibbonPanels(tabName).Where(p => p.Name == panelName).FirstOrDefault();
                 if (panel == null)
@@ -36,7 +35,7 @@ namespace SET_MAIN_DETAIL
 
                 panel.AddItem(new PushButtonData(nameof(StartRebarSelection), ribbonName, assemblyLocation, typeof(StartRebarSelection).FullName)
                 {
-                    LargeImage = new BitmapImage(new Uri(iconsDirectoryPath + "StartRebarSelection.png"))
+                    LargeImage = new BitmapImage(new Uri(iconsDirectoryPath + "SET_MAIN_DETAIL.png"))
                 });
             }
             #endregion
@@ -45,9 +44,9 @@ namespace SET_MAIN_DETAIL
             return Result.Succeeded;
         }
 
-        public Result OnStartup(UIControlledApplication application)
+        public Result OnShutdown(UIControlledApplication application)
         {
-            throw new NotImplementedException();
+            return Result.Succeeded;
         }
     }
 }

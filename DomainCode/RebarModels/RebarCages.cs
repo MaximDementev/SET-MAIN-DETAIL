@@ -27,6 +27,8 @@ namespace SET_MAIN_DETAIL
                     return CalcRebarsCages();
                 //else return 0;
             }
+
+
         }        
 
         public RebarCages(string cageName)

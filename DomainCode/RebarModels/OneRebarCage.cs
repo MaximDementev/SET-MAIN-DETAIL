@@ -16,7 +16,6 @@ namespace SET_MAIN_DETAIL
             
             } }
 
-
         public OneRebarCage(string cageName)
         {
             CageName = cageName;

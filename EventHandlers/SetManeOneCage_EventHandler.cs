@@ -6,6 +6,7 @@ using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SET_MAIN_DETAIL
 {
@@ -16,13 +17,12 @@ namespace SET_MAIN_DETAIL
     {
         private ExternalEvent _externalEvent;
         private DisplayRebarCages _parentForm;
-        private Dictionary<string, RebarCages> _rebarCagesDict = new Dictionary<string, RebarCages>();
+        private RebarCages _rebarCages;
         private OneRebarCage _oneRebarCage;
 
 
-        public static View activeView { get; set; }
+        private static Document _doc;
         private UIDocument _uiDoc;
-        private static Autodesk.Revit.DB.Document doc;
 
         #region Constructor
         public void Initialize()
@@ -33,36 +33,34 @@ namespace SET_MAIN_DETAIL
 
         //------------------ Methods ----------------------------------
 
-        public void Raise(DisplayRebarCages parentForm, Dictionary<string, RebarCages> rebarCagesDict) 
+        public RebarCages Raise(DisplayRebarCages parentForm, RebarCages rebarCages)
         {
             _parentForm = parentForm;
-            _rebarCagesDict = rebarCagesDict;
+            _rebarCages = rebarCages;
             _parentForm.Hide();
             _externalEvent.Raise();
+            return _rebarCages;
         }
 
         public void Execute(UIApplication app)
         {
-            _uiDoc = app.ActiveUIDocument; 
-            doc = _uiDoc.Document;
-            activeView = _uiDoc.ActiveView;
+            _uiDoc = app.ActiveUIDocument;
+            _doc = _uiDoc.Document;
 
             try
             {
-                SeveralRebarSelection("Выбор каркаса ##указать название каркас## (Esc - отмена)");
-                OneRebarSelection("Выбор  ##указать название каркас## (Esc - отмена)");
+                SeveralRebarSelection($"Выбор каркаса {_rebarCages.CageName} (Esc - отмена)");
+                OneRebarSelection($"Выбор главной детали {_rebarCages.CageName} (Esc - отмена)");
                 AddOneRebarCageToRebarCages();
                 _oneRebarCage.MakeDimensionsBox();
 
-                RebarCages rebarCages = _rebarCagesDict[_oneRebarCage.CageName];
-
                 double dimensionBoxRadius = _oneRebarCage.DimensionBox.GetRadius();
 
-                foreach (RebarInstance rebarInstance in rebarCages.RebarInstancesList)
+                foreach (RebarInstance rebarInstance in _rebarCages.RebarInstancesList)
                 {
                     bool isAddedToExistingCage = false;
 
-                    foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                    foreach (OneRebarCage cage in _rebarCages.oneRebarCagesList)
                     {
                         if (cage.CheckElementIsInsideDimensionBox(rebarInstance))
                         {
@@ -78,20 +76,21 @@ namespace SET_MAIN_DETAIL
                         OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
                         newOneRebarCage.DimensionBox = dimensionBox;
                         newOneRebarCage.AddInstance(rebarInstance);
-                        rebarCages.oneRebarCagesList.Add(newOneRebarCage);
+                        _rebarCages.oneRebarCagesList.Add(newOneRebarCage);
                     }
                 }
 
+                SetFlagAsMainRebar(0);
                 string MainRebarInstanceName = _oneRebarCage.MainRebarInstance.GetRebarInstanceName();
-                foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                foreach (OneRebarCage cage in _rebarCages.oneRebarCagesList)
                 {
                     cage.SetMainRebarInstance(MainRebarInstanceName);
                 }
 
-                using (Transaction transaction = new Transaction(doc))
+                using (Transaction transaction = new Transaction(_doc))
                 {
-                    transaction.Start($"Установка главной детали");
-                    rebarCages.RebarInstancesList.ForEach(rebarInstance => 
+                    transaction.Start($"Установка главной детали {_rebarCages.CageName}");
+                    _rebarCages.RebarInstancesList.ForEach(rebarInstance =>
                     {
                         try
                         {
@@ -107,7 +106,7 @@ namespace SET_MAIN_DETAIL
             {
                 TaskDialog.Show("Ошибка", ex.Message);
             }
-            _parentForm.RefreshElements();
+
             _parentForm.Show();
         }
 
@@ -116,7 +115,7 @@ namespace SET_MAIN_DETAIL
             return "SetManeOneCage Handler";
         }
 
-        private void SeveralRebarSelection( string processName)
+        private void SeveralRebarSelection(string processName)
         {
             Selection selection = _uiDoc.Selection;
 
@@ -135,10 +134,10 @@ namespace SET_MAIN_DETAIL
             {
                 el.GetDependentElements(filter).ToList().ForEach(subEl =>
                 {
-                    FamilyInstance subElem = doc.GetElement(subEl) as FamilyInstance;
+                    FamilyInstance subElem = _doc.GetElement(subEl) as FamilyInstance;
                     if (subElem.Category != null && subElem.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar)
                     {
-                        RebarInstance rebarInstance = new RebarInstance(doc, subElem);
+                        RebarInstance rebarInstance = new RebarInstance(_doc, subElem);
                         if (_oneRebarCage == null) _oneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
                         _oneRebarCage.AddInstance(rebarInstance);
                     }
@@ -149,7 +148,7 @@ namespace SET_MAIN_DETAIL
         private void AddOneRebarCageToRebarCages()
         {
             if (_oneRebarCage != null)
-                _rebarCagesDict[_oneRebarCage.CageName].MainOneRebarCage = _oneRebarCage;
+                _rebarCages.MainOneRebarCage = _oneRebarCage;
         }
 
         private void OneRebarSelection(string processName)
@@ -159,12 +158,20 @@ namespace SET_MAIN_DETAIL
             Reference SelectedReference = selection
                 .PickObject(ObjectType.Element, new SeparatorSelectionFilter_Rebar(), processName);
 
-            FamilyInstance element = doc.GetElement(SelectedReference.ElementId) as FamilyInstance;
+            FamilyInstance element = _doc.GetElement(SelectedReference.ElementId) as FamilyInstance;
 
-            RebarInstance rebarInstance = new RebarInstance(doc, element);
-            if (_oneRebarCage != null) 
-            _oneRebarCage.AddMainRebar(rebarInstance);
-            
+            RebarInstance rebarInstance = new RebarInstance(_doc, element);
+            if (_oneRebarCage != null)
+                _oneRebarCage.AddMainRebar(rebarInstance);
+
+        }
+
+        public void SetFlagAsMainRebar(int value)
+        {
+            _rebarCages.RebarInstancesList.ForEach(rebarInst =>
+            {
+                rebarInst.SetMainPartOfProduct(value);
+            });
         }
     }
 }

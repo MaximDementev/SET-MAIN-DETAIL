@@ -37,8 +37,6 @@ namespace SET_MAIN_DETAIL
                 RebarSelection(AllRebarInstances, "Выбор арматуры (Esc - отмена)");
 
                 CreateRebarCagesDict();
-
-                SetFlagAsMainRebar(0);
             }
             catch (Exception ex)
             { 
@@ -107,13 +105,7 @@ namespace SET_MAIN_DETAIL
             }
         }
 
-        public void SetFlagAsMainRebar(int value)
-        {
-            _rebarInstancesList.ForEach(rebarInst =>
-            {
-                rebarInst.SetMainPartOfProduct(value);
-            });
-        }
+        
     }
 
     

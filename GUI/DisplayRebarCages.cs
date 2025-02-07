@@ -68,11 +68,12 @@ namespace SET_MAIN_DETAIL
         {
             if (_currentTreeNode.Parent != null) return;
             this.Hide();
+            _currentTreeNode.Nodes.Clear();
             _currentRebarCages = _setManeOneCage_EventHandler?.Raise(this, _currentRebarCages);
 
             int numb = 0;
             _currentTreeNode.Nodes.Clear();
-            _currentRebarCages?.oneRebarCagesList.ForEach(a =>
+            _currentRebarCages?.OneRebarCagesList.ForEach(a =>
             {
                 numb ++;
                 TreeNode treeNode = new TreeNode();
@@ -82,8 +83,6 @@ namespace SET_MAIN_DETAIL
                 _currentTreeNode.Nodes.Add(treeNode);
             });
             RefreshElements();
-            RefreshElements();
-
         }
 
         public void RefreshElements()

@@ -12,7 +12,7 @@ namespace SET_MAIN_DETAIL
         private string _rebarName_ParamName = "ADSK_Наименование";
         private string _rebarLength_ParamName = "ADSK_Длина арматуры";
         private string _rebarShape_ParamName = "ADSK_Форма арматуры";
-        private string _rebarInstanceName;
+        private string _rebarInstanceName; 
 
 
         private string _rebarCageName;
@@ -25,9 +25,9 @@ namespace SET_MAIN_DETAIL
 
         public FamilyInstance _instance { get; private set; }
 
-        public RebarInstance(Document doc, FamilyInstance instance)
+        public RebarInstance(FamilyInstance instance)
         {
-            _doc = doc;
+            _doc = instance.Document;
             _instance = instance;
         }
 

@@ -71,6 +71,7 @@
     <Compile Include="DomainCode\RebarModels\RebarInstance.cs" />
     <Compile Include="DomainCode\RebarModels\SimilarRebars.cs" />
     <Compile Include="DomainCode\Util\ParamHandler.cs" />
+    <Compile Include="DomainCode\Util\RebarSelectionHandler.cs" />
     <Compile Include="EventHandlers\SeparatorSelectionFilter.cs" />
     <Compile Include="EventHandlers\SeparatorSelectionFilter_Rebar.cs" />
     <Compile Include="EventHandlers\SetManeOneCage_EventHandler.cs" />

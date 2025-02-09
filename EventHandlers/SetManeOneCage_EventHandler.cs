@@ -2,10 +2,10 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace SET_MAIN_DETAIL
 {
@@ -36,17 +36,21 @@ namespace SET_MAIN_DETAIL
         public RebarCages Raise(DisplayRebarCages parentForm, RebarCages rebarCages)
         {
             _parentForm = parentForm;
+
             _rebarCages = rebarCages;
             _parentForm.Hide();
+
             _externalEvent.Raise();
             return _rebarCages;
         }
 
         public void Execute(UIApplication app)
         {
+
             _uiDoc = app.ActiveUIDocument;
             _doc = _uiDoc.Document;
             _oneRebarCage = new OneRebarCage(_rebarCages.CageName);
+
 
             try
             {
@@ -71,7 +75,35 @@ namespace SET_MAIN_DETAIL
                         {
                             rebarInstance.SetAllParamValue();
                         }
-                        catch { }
+
+                    }
+
+                    if (!isAddedToExistingCage)
+                    {
+                        DimensionBox dimensionBox = new DimensionBox(rebarInstance.GetLocationPoint(), dimensionBoxRadius);
+                        OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
+                        newOneRebarCage.DimensionBox = dimensionBox;
+                        newOneRebarCage.AddInstance(rebarInstance);
+                        rebarCages.oneRebarCagesList.Add(newOneRebarCage);
+                    }
+                }
+
+                string MainRebarInstanceName = _oneRebarCage.MainRebarInstance.GetRebarInstanceName();
+                foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                {
+                    cage.SetMainRebarInstance(MainRebarInstanceName);
+                }
+
+                using (Transaction transaction = new Transaction(doc))
+                {
+                    transaction.Start($"Установка главной детали");
+                    _parentForm.TaskCount = rebarCages.RebarInstancesList.Count;
+                    rebarCages.RebarInstancesList.ForEach(rebarInstance => 
+                    {
+                        Thread.Sleep(300);
+                        rebarInstance.SetAllParamValue();
+                        _parentForm.CountOfComplete++;
+
                     });
 
                     transaction.Commit();
@@ -82,7 +114,9 @@ namespace SET_MAIN_DETAIL
                 TaskDialog.Show("Ошибка", ex.Message);
             }
 
+
             _parentForm.Show();
+
         }
 
         public string GetName()

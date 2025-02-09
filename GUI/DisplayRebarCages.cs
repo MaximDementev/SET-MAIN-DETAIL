@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using UIFramework.PropertyGrid;
+using System.ComponentModel;
 using System.Threading;
 
 namespace SET_MAIN_DETAIL
@@ -17,6 +18,8 @@ namespace SET_MAIN_DETAIL
         private RebarCages _currentRebarCages;
         private TreeNode _currentTreeNode;
         private SetManeOneCage_EventHandler _setManeOneCage_EventHandler;
+        private System.Windows.Forms.Timer _timer;
+        private BackgroundWorker _backgroundWorker;
         #endregion
 
         #region Constructor
@@ -35,6 +38,37 @@ namespace SET_MAIN_DETAIL
             propertyGrid.HelpVisible = false;
 
             treeView.AfterSelect += AfterSelect_Event;
+            _timer = new System.Windows.Forms.Timer();
+            _timer.Interval = 100;
+            _timer.Tick += (arg, ev) =>
+            {
+                TaskProgressLabel.Text = $"Выполнено задач {CountOfComplete} из {TaskCount}";
+                if (CountOfComplete == TaskCount)
+                {
+                    _timer.Stop();
+                    TaskCount = -1;
+                    CountOfComplete = 0;
+                    TaskProgressLabel.Text = "";
+                }
+                TaskProgressLabel.Refresh();
+            };
+
+            _backgroundWorker = new BackgroundWorker();
+            _backgroundWorker.DoWork += (sender, e) =>
+            {
+                CountOfComplete = 0;
+                TaskCount = 500;
+                for(int i = 0; i < 500; i++)
+                {
+                    Thread.Sleep(300);
+                    CountOfComplete++;
+                }
+            };
+            _backgroundWorker.ReportProgress(0);
+            _backgroundWorker.ProgressChanged += (sender, e) =>
+            {
+
+            };
         }
 
         private void InitTreeViewNodes()
@@ -51,6 +85,9 @@ namespace SET_MAIN_DETAIL
         }
         #endregion
 
+        public int CountOfComplete { get; set; }
+        public int TaskCount { get; set; } = -1;
+
         private void AfterSelect_Event(object sender, TreeViewEventArgs e)
         {
             propertyGrid.SelectedObject = e.Node.Tag;
@@ -66,6 +103,12 @@ namespace SET_MAIN_DETAIL
 
         private void SetMaineOneCage_button_Click(object sender, System.EventArgs e)
         {
+
+            _setManeOneCage_EventHandler?.Raise(this, _rebarCagesDict);
+            while (TaskCount == -1)
+            {}
+            _timer.Start();
+
             if (_currentTreeNode.Parent != null) return;
             this.Hide();
             _currentTreeNode.Nodes.Clear();
@@ -83,12 +126,24 @@ namespace SET_MAIN_DETAIL
                 _currentTreeNode.Nodes.Add(treeNode);
             });
             RefreshElements();
+
         }
 
         public void RefreshElements()
         {
             treeView.Refresh();
             propertyGrid.Refresh();
+        }
+
+        private void DisplayRebarCages_FormClosing(object sender, FormClosingEventArgs e)
+        {
+           
+        }
+
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            _backgroundWorker.RunWorkerAsync();
+            _timer.Start();
         }
     }
 }

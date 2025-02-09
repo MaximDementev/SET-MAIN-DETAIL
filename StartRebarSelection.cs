@@ -48,7 +48,7 @@ namespace SET_MAIN_DETAIL
             }
 
 
-            SetManeOneCage_EventHandler SetManeOneCage_eventHandler = new SetManeOneCage_EventHandler();
+            SetManeOneCage_EventHandler SetManeOneCage_eventHandler = new SetManeOneCage_EventHandler();    
             SetManeOneCage_eventHandler.Initialize();
 
             Thread thread = new Thread(() =>

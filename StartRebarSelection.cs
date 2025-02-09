@@ -6,6 +6,7 @@ using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 
 namespace SET_MAIN_DETAIL
@@ -50,8 +51,13 @@ namespace SET_MAIN_DETAIL
             SetManeOneCage_EventHandler SetManeOneCage_eventHandler = new SetManeOneCage_EventHandler();
             SetManeOneCage_eventHandler.Initialize();
 
+            Thread thread = new Thread(() =>
+            {
             DisplayRebarCages displayRebarCages = new DisplayRebarCages(_rebarCagesDict, SetManeOneCage_eventHandler);
-            displayRebarCages.Show();
+            displayRebarCages.ShowDialog();
+            });
+
+            thread.Start();
 
             return Result.Succeeded;
 

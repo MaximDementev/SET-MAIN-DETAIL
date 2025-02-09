@@ -6,6 +6,7 @@ using Autodesk.Revit.UI.Selection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace SET_MAIN_DETAIL
 {
@@ -37,12 +38,12 @@ namespace SET_MAIN_DETAIL
         {
             _parentForm = parentForm;
             _rebarCagesDict = rebarCagesDict;
-            _parentForm.Hide();
             _externalEvent.Raise();
         }
 
         public void Execute(UIApplication app)
         {
+            //_parentForm.Show();
             _uiDoc = app.ActiveUIDocument; 
             doc = _uiDoc.Document;
             activeView = _uiDoc.ActiveView;
@@ -91,9 +92,12 @@ namespace SET_MAIN_DETAIL
                 using (Transaction transaction = new Transaction(doc))
                 {
                     transaction.Start($"Установка главной детали");
+                    _parentForm.TaskCount = rebarCages.RebarInstancesList.Count;
                     rebarCages.RebarInstancesList.ForEach(rebarInstance => 
                     {
+                        Thread.Sleep(300);
                         rebarInstance.SetAllParamValue();
+                        _parentForm.CountOfComplete++;
                     });
 
                     transaction.Commit();
@@ -104,7 +108,7 @@ namespace SET_MAIN_DETAIL
                 TaskDialog.Show("Ошибка", ex.Message);
             }
             _parentForm.RefreshElements();
-            _parentForm.Show();
+            
         }
 
         public string GetName()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,25 +7,47 @@ namespace SET_MAIN_DETAIL
 {
     public class OneRebarCage
     {
-        public RebarInstance MainRebarInstance;
+        #region Public Fields
+        public RebarInstance MainRebarInstance { get; private set; }
         public string CageName { get; private set; }
-        public List<RebarInstance> RebarInstanceList = new List<RebarInstance>();
-        public int RebarInstancesCount { get 
-            { 
-                if(RebarInstanceList.Count != null) return RebarInstanceList.Count;
-                return 0; 
-            
-            } }
+        public bool RebarsCagesIsValidated { get; private set; }
 
+        public DimensionBox DimensionBox { get; set; }
+
+        public List<RebarInstance> RebarInstanceList = new List<RebarInstance>();
+        public int RebarInstancesCount 
+        { 
+            get
+            { 
+                if(RebarInstanceList != null) return RebarInstanceList.Count;
+                return 0;             
+            } 
+        }
+        #endregion
+
+        #region Constructor
         public OneRebarCage(string cageName)
         {
             CageName = cageName;
         }
-        public DimensionBox DimensionBox {get; set;}
+
+        #endregion
+
+        //---------------- Methods -----------------------
 
         public void AddInstance(RebarInstance element)
         {
             RebarInstanceList.Add(element);
+        }
+
+        public void AddInstances (List<FamilyInstance> elementList)
+        {
+            elementList.ForEach(elem => 
+            {
+                RebarInstance rebarInstance = new RebarInstance(elem);
+
+                RebarInstanceList.Add(rebarInstance); 
+            });
         }
 
         public void AddMainRebar(RebarInstance rebarInstance)
@@ -34,8 +57,8 @@ namespace SET_MAIN_DETAIL
 
         public void MakeDimensionsBox()
         {
-            List<Autodesk.Revit.DB.XYZ> minPointList = new List<Autodesk.Revit.DB.XYZ>();
-            List<Autodesk.Revit.DB.XYZ> maxPointList = new List<Autodesk.Revit.DB.XYZ>();
+            List<XYZ> minPointList = new List<XYZ>();
+            List<XYZ> maxPointList = new List<XYZ>();
             RebarInstanceList.ForEach(element => 
             {
                 minPointList.Add(element.GetBoundingBox_MinPoint());
@@ -51,10 +74,22 @@ namespace SET_MAIN_DETAIL
 
         public void SetMainRebarInstance (string RebarInstanceName)
         {
+            if (MainRebarInstance != null && MainRebarInstance.GetRebarInstanceName() == RebarInstanceName) return;
+
             MainRebarInstance = RebarInstanceList.FirstOrDefault(elem =>
             elem.GetRebarInstanceName() == RebarInstanceName);
 
             MainRebarInstance.SetMainPartOfProduct(1);
+        }
+
+        public bool Validate(OneRebarCage MainRebarCage)
+        {
+            if (MainRebarCage.RebarInstancesCount == RebarInstanceList.Count)
+             RebarsCagesIsValidated = true;
+            else RebarsCagesIsValidated = false;
+
+            return RebarsCagesIsValidated;
+
         }
     }
 }

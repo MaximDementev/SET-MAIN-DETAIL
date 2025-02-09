@@ -35,11 +35,9 @@ namespace SET_MAIN_DETAIL
 
             try
             {
-                RebarSelection(AllRebarInstances, "Выбор арматуры (Esc - отмена)");
+                AllRebarInstances = RebarSelectionHandler.RebarSelection(_uiDoc, "Выбор арматуры (Esc - отмена)");
 
                 CreateRebarCagesDict();
-
-                SetFlagAsMainRebar(0);
             }
             catch (Exception ex)
             { 
@@ -62,38 +60,11 @@ namespace SET_MAIN_DETAIL
             return Result.Succeeded;
 
         }
-
-        public void RebarSelection(List<FamilyInstance> RebarInstances, string processName)
-        {
-            Selection selection = _uiDoc.Selection;
-
-            List<Element> AllSelectedElements = selection
-                .PickElementsByRectangle(new SeparatorSelectionFilter(), processName).ToList();
-
-            List<FamilyInstance> SelectedInstansec = new List<FamilyInstance>();
-            AllSelectedElements.ForEach(instance =>
-            {
-                if (instance is FamilyInstance familyInstance) SelectedInstansec.Add(familyInstance);
-            });
-
-            ElementCategoryFilter filter = new ElementCategoryFilter(BuiltInCategory.OST_Rebar);
-
-            SelectedInstansec.ForEach(el =>
-            {
-                el.GetDependentElements(filter).ToList().ForEach(subEl =>
-                {
-                    FamilyInstance subElem = doc.GetElement(subEl) as FamilyInstance;
-                    if (subElem.Category != null && subElem.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Rebar)
-                        RebarInstances.Add(subElem);
-                });
-            });
-        }
-
         public void CreateRebarCagesDict()
         {
             foreach (FamilyInstance item in AllRebarInstances)
             {
-                RebarInstance rebarInstance = new RebarInstance(doc, item);
+                RebarInstance rebarInstance = new RebarInstance(item);
                 _rebarInstancesList.Add(rebarInstance);
 
                 string itemName = rebarInstance.GetRebarCageName();
@@ -113,13 +84,7 @@ namespace SET_MAIN_DETAIL
             }
         }
 
-        public void SetFlagAsMainRebar(int value)
-        {
-            _rebarInstancesList.ForEach(rebarInst =>
-            {
-                rebarInst.SetMainPartOfProduct(value);
-            });
-        }
+        
     }
 
     

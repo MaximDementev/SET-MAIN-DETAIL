@@ -15,6 +15,8 @@ namespace SET_MAIN_DETAIL
         #region Private Fields
         private Dictionary<string, RebarCages> _rebarCagesDict = new Dictionary<string, RebarCages>();
         private List<RebarCages> _rebarCagesList;
+        private RebarCages _currentRebarCages;
+        private TreeNode _currentTreeNode;
         private SetManeOneCage_EventHandler _setManeOneCage_EventHandler;
         private System.Windows.Forms.Timer _timer;
         private BackgroundWorker _backgroundWorker;
@@ -74,7 +76,7 @@ namespace SET_MAIN_DETAIL
             _rebarCagesList.ForEach(a =>
             {
                 TreeNode treeNode = new TreeNode();
-                treeNode.Text = $"Изделие {a.CageName}";
+                treeNode.Text = $"{a.CageName}";
                 treeNode.Tag = a;
 
                 treeView.Nodes.Add(treeNode);
@@ -89,16 +91,42 @@ namespace SET_MAIN_DETAIL
         private void AfterSelect_Event(object sender, TreeViewEventArgs e)
         {
             propertyGrid.SelectedObject = e.Node.Tag;
+
+            if(e.Node.Parent == null ) 
+            {
+                _currentRebarCages = _rebarCagesDict[e.Node.Text];
+                _currentTreeNode = e.Node;
+            }
+
             propertyGrid.Refresh();
         }
 
-        private void SetManeOneCage_button_Click(object sender, System.EventArgs e)
+        private void SetMaineOneCage_button_Click(object sender, System.EventArgs e)
         {
-            //this.Hide();
+
             _setManeOneCage_EventHandler?.Raise(this, _rebarCagesDict);
             while (TaskCount == -1)
             {}
             _timer.Start();
+
+            if (_currentTreeNode.Parent != null) return;
+            this.Hide();
+            _currentTreeNode.Nodes.Clear();
+            _currentRebarCages = _setManeOneCage_EventHandler?.Raise(this, _currentRebarCages);
+
+            int numb = 0;
+            _currentTreeNode.Nodes.Clear();
+            _currentRebarCages?.OneRebarCagesList.ForEach(a =>
+            {
+                numb ++;
+                TreeNode treeNode = new TreeNode();
+                treeNode.Text = $"Каркас {a.CageName} ({numb})";
+                treeNode.Tag = a;
+
+                _currentTreeNode.Nodes.Add(treeNode);
+            });
+            RefreshElements();
+
         }
 
         public void RefreshElements()

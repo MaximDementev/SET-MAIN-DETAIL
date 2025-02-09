@@ -57,7 +57,7 @@
             this.SetManeOneCage_button.TabIndex = 2;
             this.SetManeOneCage_button.Text = "Указать каркас";
             this.SetManeOneCage_button.UseVisualStyleBackColor = true;
-            this.SetManeOneCage_button.Click += new System.EventHandler(this.SetManeOneCage_button_Click);
+            this.SetManeOneCage_button.Click += new System.EventHandler(this.SetMaineOneCage_button_Click);
             // 
             // TaskProgressLabel
             // 

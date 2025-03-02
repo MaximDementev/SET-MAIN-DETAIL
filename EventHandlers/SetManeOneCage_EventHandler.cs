@@ -2,9 +2,8 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 
 namespace SET_MAIN_DETAIL
@@ -16,12 +15,14 @@ namespace SET_MAIN_DETAIL
     {
         #region Private Fields
         private ExternalEvent _externalEvent;
+        private static Document _doc;
+        private UIDocument _uiDoc;
+
         private DisplayRebarCages _parentForm;
+
         private RebarCages _rebarCages;
         private OneRebarCage _oneRebarCage;
 
-        private static Document _doc;
-        private UIDocument _uiDoc;
         #endregion
 
         #region Constructor
@@ -46,11 +47,9 @@ namespace SET_MAIN_DETAIL
 
         public void Execute(UIApplication app)
         {
-
             _uiDoc = app.ActiveUIDocument;
             _doc = _uiDoc.Document;
             _oneRebarCage = new OneRebarCage(_rebarCages.CageName);
-
 
             try
             {
@@ -66,39 +65,51 @@ namespace SET_MAIN_DETAIL
                 _rebarCages.SetMainRebarInstance();
                 _rebarCages.ValidateRebarsCages();
 
-                using (Transaction transaction = new Transaction(_doc))
+                using (Transaction transaction1 = new Transaction(_doc))
                 {
-                    transaction.Start($"Установка главной детали {_rebarCages.CageName}");
-                    _rebarCages.RebarInstancesList.ForEach(rebarInstance =>
+                    bool isAddedToExistingCage = false;
+
+                    foreach (OneRebarCage cage in _rebarCages.OneRebarCagesList)
                     {
-                        try
+                        transaction1.Start($"Установка главной детали {_rebarCages.CageName}");
+                        _rebarCages.RebarInstancesList.ForEach(rebarInstance =>
                         {
-                            rebarInstance.SetAllParamValue();
-                        }
+                            if (cage.CheckElementIsInsideDimensionBox(rebarInstance))
+                            {
+                                try
+                                {
+                                    cage.AddInstance(rebarInstance);
+                                    isAddedToExistingCage = true;
+                                    rebarInstance.SetAllParamValue();
+                                }
+                                catch { }
+                            }
+
+                            else
+                            {
+                                DimensionBox dimensionBox = new DimensionBox(rebarInstance.GetLocationPoint(), _oneRebarCage.DimensionBox.Radius);
+                                OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
+                                newOneRebarCage.DimensionBox = dimensionBox;
+                                newOneRebarCage.AddInstance(rebarInstance);
+                                _rebarCages.OneRebarCagesList.Add(newOneRebarCage);
+                            }
+                        });
 
                     }
-
-                    if (!isAddedToExistingCage)
-                    {
-                        DimensionBox dimensionBox = new DimensionBox(rebarInstance.GetLocationPoint(), dimensionBoxRadius);
-                        OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
-                        newOneRebarCage.DimensionBox = dimensionBox;
-                        newOneRebarCage.AddInstance(rebarInstance);
-                        rebarCages.oneRebarCagesList.Add(newOneRebarCage);
-                    }
+                    transaction1.Commit();
                 }
 
                 string MainRebarInstanceName = _oneRebarCage.MainRebarInstance.GetRebarInstanceName();
-                foreach (OneRebarCage cage in rebarCages.oneRebarCagesList)
+                foreach (OneRebarCage cage in _rebarCages.OneRebarCagesList)
                 {
                     cage.SetMainRebarInstance(MainRebarInstanceName);
                 }
 
-                using (Transaction transaction = new Transaction(doc))
+                using (Transaction transaction = new Transaction(_doc))
                 {
                     transaction.Start($"Установка главной детали");
-                    _parentForm.TaskCount = rebarCages.RebarInstancesList.Count;
-                    rebarCages.RebarInstancesList.ForEach(rebarInstance => 
+                    _parentForm.TaskCount = _rebarCages.RebarInstancesList.Count;
+                    _rebarCages.RebarInstancesList.ForEach(rebarInstance => 
                     {
                         Thread.Sleep(300);
                         rebarInstance.SetAllParamValue();

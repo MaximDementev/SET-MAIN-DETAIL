@@ -104,7 +104,7 @@ namespace SET_MAIN_DETAIL
         private void SetMaineOneCage_button_Click(object sender, System.EventArgs e)
         {
 
-            _setManeOneCage_EventHandler?.Raise(this, _rebarCagesDict);
+            _setManeOneCage_EventHandler?.Raise(this, _currentRebarCages);
             while (TaskCount == -1)
             {}
             _timer.Start();

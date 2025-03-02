@@ -27,7 +27,7 @@ namespace SET_MAIN_DETAIL
         private List<RebarInstance> _rebarInstancesList = new List<RebarInstance>();
 
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
-        {
+        { 
             _uiDoc = commandData.Application.ActiveUIDocument;
             doc = _uiDoc.Document;
             activeView = _uiDoc.ActiveView;

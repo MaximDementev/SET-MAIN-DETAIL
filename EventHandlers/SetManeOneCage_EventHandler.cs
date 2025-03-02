@@ -68,15 +68,14 @@ namespace SET_MAIN_DETAIL
                 using (Transaction transaction1 = new Transaction(_doc))
                 {
                     bool isAddedToExistingCage = false;
+                    transaction1.Start($"Установка главной детали {_rebarCages.CageName}");
 
                     foreach (OneRebarCage cage in _rebarCages.OneRebarCagesList)
                     {
-                        transaction1.Start($"Установка главной детали {_rebarCages.CageName}");
                         _rebarCages.RebarInstancesList.ForEach(rebarInstance =>
                         {
                             if (cage.CheckElementIsInsideDimensionBox(rebarInstance))
-                            {
-                                try
+                                {try
                                 {
                                     cage.AddInstance(rebarInstance);
                                     isAddedToExistingCage = true;
@@ -85,7 +84,7 @@ namespace SET_MAIN_DETAIL
                                 catch { }
                             }
 
-                            else
+                            if (!isAddedToExistingCage)
                             {
                                 DimensionBox dimensionBox = new DimensionBox(rebarInstance.GetLocationPoint(), _oneRebarCage.DimensionBox.Radius);
                                 OneRebarCage newOneRebarCage = new OneRebarCage(rebarInstance.GetRebarCageName());
@@ -108,13 +107,9 @@ namespace SET_MAIN_DETAIL
                 using (Transaction transaction = new Transaction(_doc))
                 {
                     transaction.Start($"Установка главной детали");
-                    _parentForm.TaskCount = _rebarCages.RebarInstancesList.Count;
                     _rebarCages.RebarInstancesList.ForEach(rebarInstance => 
                     {
-                        Thread.Sleep(300);
                         rebarInstance.SetAllParamValue();
-                        _parentForm.CountOfComplete++;
-
                     });
 
                     transaction.Commit();

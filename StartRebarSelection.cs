@@ -51,8 +51,8 @@ namespace SET_MAIN_DETAIL
 
             Thread thread = new Thread(() =>
             {
-            DisplayRebarCages displayRebarCages = new DisplayRebarCages(_rebarCagesDict, SetManeOneCage_eventHandler);
-            displayRebarCages.ShowDialog();
+                DisplayRebarCages displayRebarCages = new DisplayRebarCages(_rebarCagesDict, SetManeOneCage_eventHandler);
+                displayRebarCages.ShowDialog();
             });
 
             thread.Start();
